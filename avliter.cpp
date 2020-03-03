@@ -37,10 +37,8 @@ int max(int a, int b) {
 }
 
 BST* RR(BST* root) {
-    BST* t1 = new BST;
-    t1 = root->left;
-    BST* t2 = new BST;
-    t2 = t1->right;
+    BST* t1 = root->left;
+    BST* t2 = t1->right;
 
     t1->right = root;
     root->left = t2;
@@ -54,8 +52,10 @@ BST* RR(BST* root) {
 BST* LR(BST* root) {
     BST* t1 = root->right;
     BST* t2 = t1->left;
+
     t1->left = root;
     root->right = t2;
+    
     root->height = max(height(root->left), height(root->right)) + 1;
     t1->height = max(height(t1->left), height(t1->right)) + 1;
 
