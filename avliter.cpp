@@ -36,7 +36,7 @@ int max(int a, int b) {
         return b;
 }
 
-BST* RR(BST* root) {
+BST* rightRotate(BST* root) {
     BST* t1 = root->left;
     BST* t2 = t1->right;
 
@@ -49,13 +49,13 @@ BST* RR(BST* root) {
     return t1;
 }
 
-BST* LR(BST* root) {
+BST* leftRotate(BST* root) {
     BST* t1 = root->right;
     BST* t2 = t1->left;
 
     t1->left = root;
     root->right = t2;
-    
+
     root->height = max(height(root->left), height(root->right)) + 1;
     t1->height = max(height(t1->left), height(t1->right)) + 1;
 
@@ -102,21 +102,21 @@ BST* insertIter(BST* root, int val) {
         root->height = max(height(root->left), height(root->right)) + 1;
         balance = bFactor(root);
         if (balance > 1 && root->left->data > val) {
-            root = RR(root);
+            root = rightRotate(root);
             balance = bFactor(root);
         }
         if (balance < -1 && root->right->data < val) {
-            root = LR(root);
+            root = leftRotate(root);
             balance = bFactor(root);
         }
         if (balance > 1 && root->left->data < val) {
-            root->left = LR(root->left);
-            root = RR(root);
+            root->left = leftRotate(root->left);
+            root = rightRotate(root);
             balance = bFactor(root);
         }
         if (balance < -1 && root->right->data > val) {
-            root->right = RR(root->right);
-            root = LR(root);
+            root->right = rightRotate(root->right);
+            root = leftRotate(root);
             balance = bFactor(root);
         }
         temp = root;
@@ -226,21 +226,21 @@ BST* deleteIter(BST* root, int val) {
         root->height = max(height(root->left), height(root->right)) + 1;
         balance = bFactor(root);
         if (balance > 1 && root->left->data > val) {
-            root = RR(root);
+            root = rightRotate(root);
             balance = bFactor(root);
         }
         if (balance < -1 && root->right->data < val) {
-            root = LR(root);
+            root = leftRotate(root);
             balance = bFactor(root);
         }
         if (balance > 1 && root->left->data < val) {
-            root->left = LR(root->left);
-            root = RR(root);
+            root->left = leftRotate(root->left);
+            root = rightRotate(root);
             balance = bFactor(root);
         }
         if (balance < -1 && root->right->data > val) {
-            root->right = RR(root->right);
-            root = LR(root);
+            root->right = rightRotate(root->right);
+            root = leftRotate(root);
             balance = bFactor(root);
         }
         temp2 = root;
