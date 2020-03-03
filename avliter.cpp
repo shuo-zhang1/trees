@@ -15,8 +15,6 @@ BST* newNode(int val) {
     return temp; 
 } 
 
-
-
 int height(BST* root) {
     if (root == NULL) {
         return 0;
