@@ -1,28 +1,29 @@
 #include <iostream>
+#include <time.h>
 using namespace std; 
   
-struct BST { 
+struct Node { 
     int data; 
     int height;
-    BST *left, *right, *parent; 
+    Node *left, *right, *parent; 
 }; 
   
-BST* newNode(int val) { 
-    BST* temp = new BST; 
+Node* newNode(int val) { 
+    Node* temp = new Node; 
     temp->left = temp->right = temp->parent = NULL; 
     temp->data = val; 
     temp->height = 0;
     return temp; 
 } 
 
-int height(BST* root) {
+int height(Node* root) {
     if (root == NULL) {
         return 0;
     }
     return root->height;
 }
 
-int bFactor(BST* root) {
+int bFactor(Node* root) {
     if (root == NULL) 
         return 0;
     else
@@ -36,9 +37,9 @@ int max(int a, int b) {
         return b;
 }
 
-BST* rightRotate(BST* root) {
-    BST* t1 = root->left;
-    BST* t2 = t1->right;
+Node* rightRotate(Node* root) {
+    Node* t1 = root->left;
+    Node* t2 = t1->right;
 
     t1->right = root;
     root->left = t2;
@@ -49,9 +50,9 @@ BST* rightRotate(BST* root) {
     return t1;
 }
 
-BST* leftRotate(BST* root) {
-    BST* t1 = root->right;
-    BST* t2 = t1->left;
+Node* leftRotate(Node* root) {
+    Node* t1 = root->right;
+    Node* t2 = t1->left;
 
     t1->left = root;
     root->right = t2;
@@ -63,41 +64,27 @@ BST* leftRotate(BST* root) {
 
 }
 
-BST* insertIter(BST* root, int val) {
-    BST* parent = NULL;
-    if (root == NULL) {
-        root = newNode(val);
-        root->parent = NULL;
-        return root;
+Node* insertIter(Node* root, int val) {
+    Node* newnode = newNode(val);
+    Node* node = root;
+    Node* next = NULL;
+    while (node != NULL) { 
+        next = node; 
+        if (val < node->data) 
+            node = node->left; 
+        else
+            node = node->right; 
     }
-    while (root != NULL) {
-        if (root->data > val) {
-            parent = root;
-            root = root->left;
-            if (root == NULL) {
-                root= newNode(val);
-                root->parent = parent;
-                parent->left = root;
-                break;
-            }
-            continue;
-        }
-        if (root->data < val) {
-            parent = root;
-            root = root->right;
-            if (root == NULL) {
-                root = newNode(val);
-                root->parent = parent;
-                parent->right = root;
-                break;
-            }
-            continue;
-        }
-        return root;
+    if (next == NULL) 
+        next = newnode;
+    else if (val < next->data) 
+        next->left = newnode; 
+    else
+        next->right = newnode; 
+    return next; 
 
-    }
     int balance = 0;
-    BST* temp = NULL;
+    Node* temp = NULL;
     while (root != NULL) {
         root->height = max(height(root->left), height(root->right)) + 1;
         balance = bFactor(root);
@@ -125,7 +112,7 @@ BST* insertIter(BST* root, int val) {
     return temp;
 }
 
-BST* findMinIter(BST* root) {
+Node* findMinIter(Node* root) {
     if (root == NULL)
         return NULL;
     while (root->left != NULL)
@@ -133,7 +120,7 @@ BST* findMinIter(BST* root) {
     return root;
 }
 
-BST* findMaxIter(BST* root) {
+Node* findMaxIter(Node* root) {
     if(root==NULL)
         return NULL;
     while (root->right != NULL)
@@ -141,9 +128,11 @@ BST* findMaxIter(BST* root) {
     return root;
 }
 
-BST* findNextIter(BST* root, int key)
-{
-	BST* next = NULL;
+Node* findNextIter(Node* root, int key) {
+	Node* next = NULL;
+    if (findMaxIter(root)->data == key) {
+        return root;
+    }
 	while (1) {
 		if (key < root->data) {
 			next = root;
@@ -163,8 +152,11 @@ BST* findNextIter(BST* root, int key)
 	return next;
 }
 
-BST* findPrevIter(BST* root, int key) {
-	BST* prev = NULL;
+Node* findPrevIter(Node* root, int key) {
+	Node* prev = NULL;
+    if (findMinIter(root)->data == key) {
+        return root;
+    }
 	while (1) {
 		if (key < root->data) {
 			root = root->left;
@@ -184,44 +176,52 @@ BST* findPrevIter(BST* root, int key) {
 	return prev;
 }
 
-BST* deleteIter(BST* root, int val) {
-    BST* parent = NULL;
-    while (root != NULL) {
-        if (root->data > val) {
-            parent = root;
-            root = root->left;
-            continue;
+Node* deleteIter(Node* root, int val) {
+    Node* current, *target, *parent;
+    current = root;
+    target = NULL;
+    if(current == NULL) 
+        return NULL;
+    while(1) {  
+        if(current->data == val)
+            target = current;
+        if(val < current->data) {
+            if(current->left == NULL)
+                break;
+            parent = current;
+            current = current->left;
         }
-        if (root->data < val) {
-            parent = root;
-            root = root->right;
-            continue;
+        else {  
+            if(current->right == NULL)
+                break;
+            parent = current;
+            current = current->right;
         }
-        break;
     }
-    if (root->left == NULL || root->right == NULL) {
-        BST* temp = root->left ? root->left : root->right;
-        if (temp == NULL) {
-            temp = root;
-            root->parent->left = NULL;
-            root = NULL;
-        }
-        else 
-            *root = *temp;
-        free(temp);
+    if(target == NULL) {
+        return NULL;
     }
     else {
-        BST* temp = findMinIter(root->right);
-        root->data = temp->data;
-        root = root->right;
-        val = temp->data;
+        if(parent == NULL) {
+            free(current);
+            root = NULL;
+        }
+        else {
+            target->data = current->data;
+            if(parent->left == current) {
+                parent->left = current->right;
+            }
+            else {
+                parent->right = current->left;
+                free(current);
+            }
+        }
     }
-    if (root == NULL) {
-        return root;
-    }
+    return root;
+
     root->height = max(height(root->left), height(root->right)) + 1;
     int balance = 0;
-    BST* temp2 = NULL;
+    Node* temp2 = NULL;
     while (root != NULL) {
         root->height = max(height(root->left), height(root->right)) + 1;
         balance = bFactor(root);
@@ -249,20 +249,20 @@ BST* deleteIter(BST* root, int val) {
     return temp2;
 }
 
-void printBST(BST* root) {
-     if(root == NULL)
-           return;
-     printBST(root->left);
-     printf("%d ", root->data);
-     printBST(root->right);
+void printAVL(Node* root) {  
+    if(root != NULL)  
+    {  
+        cout << root->data << " ";  
+        printAVL(root->left);  
+        printAVL(root->right);  
+    }  
+}  
 
-} 
-
-void printData(BST* root) {
+void printData(Node* root) {
     cout << root->data << endl;
 }
 /*
-bool AVL(BST* root) {
+bool AVL(Node* root) {
     if (root == NULL) {
         return 1;
     }
@@ -273,7 +273,7 @@ bool AVL(BST* root) {
     return 0;
 }
 
-void isAVL(BST* root) {
+void isAVL(Node* root) {
     if (AVL(root))
         cout<<"AVL CONFIRMED"<<endl;
     else
@@ -288,8 +288,8 @@ int main()
            5      10 
          /  \    /  \ 
         3    6   8   12 */
-    BST* root = NULL; 
-    BST* min, *max, *next, *prev;
+    Node* root = NULL; 
+    Node* min, *max, *next, *prev;
 
     root = insertIter(root, 7); 
     insertIter(root, 10); 
@@ -298,11 +298,11 @@ int main()
     insertIter(root, 6); 
     insertIter(root, 8); 
     insertIter(root, 12); 
-    printBST(root);
+    printAVL(root);
     cout << endl;
     deleteIter(root, 3);
     cout <<"3 is deleted"<<endl;
-    printBST(root);
+    printAVL(root);
     cout<<endl;
     max = findMaxIter(root);
     min = findMinIter(root);
