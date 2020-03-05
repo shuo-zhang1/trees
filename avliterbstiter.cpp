@@ -42,25 +42,6 @@ int* getRandomArray(int n) {
     return arr;
 }
 
-Node* insertIter(Node* root, int val) {
-    Node* newnode = newNode(val);
-    Node* current = root;
-    Node* next = NULL;
-    while (current != NULL) { 
-        next = current; 
-        if (val < current->data) 
-            current = current->left; 
-        else
-            current = current->right; 
-    }
-    if (next == NULL) 
-        next = newnode;
-    else if (val < next->data) 
-        next->left = newnode; 
-    else
-        next->right = newnode; 
-    return next; 
-}
 
 Node* insertRec(Node* root, int val) { 
     if (!root) 
@@ -121,6 +102,28 @@ Node* rebalance(Node* root) {
     }
     return root;
 }
+
+Node* insertIter(Node* root, int val) {
+    Node* newnode = newNode(val);
+    Node* current = root;
+    Node* next = NULL;
+    while (current != NULL) { 
+        next = current; 
+        if (val < current->data) 
+            current = current->left; 
+        else
+            current = current->right; 
+    }
+    if (next == NULL) 
+        next = newnode;
+    else if (val < next->data) 
+        next->left = newnode; 
+    else
+        next->right = newnode; 
+    next = rebalance(next);
+    return next; 
+}
+
 
 Node* findMinIter(Node* root) {
     if (root == NULL)
@@ -293,7 +296,6 @@ int main() {
     for (int i = 1; i < n; i++){
         insertIter(avl, arr[i]);
     }
-    avl = rebalance(avl);
     bst = insertIterBST(bst, arr[0]);
     for (int i = 1; i < n; i++){
         insertIterBST(bst, arr[i]);
