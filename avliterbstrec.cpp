@@ -19,7 +19,7 @@ Node* newNode(int key) {
 int max(int a, int b) {
     return (a > b)? a : b;
 }
-
+ 
 int height(Node* node) {
     if (node == NULL)
         return 0;
