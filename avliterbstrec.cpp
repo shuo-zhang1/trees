@@ -5,95 +5,53 @@ using namespace std;
 struct Node { 
     int data; 
     int height;
-    Node *left, *right, *parent; 
+    Node *left, *right; 
 }; 
   
-Node* newNode(int val) { 
-    Node* temp = new Node; 
-    temp->left = temp->right = temp->parent = NULL; 
-    temp->data = val; 
-    temp->height = 0;
-    return temp; 
-} 
+Node* newNode(int key) {
+    Node* node = new Node;
+    node->data = key;
+    node->height = 1;
+    node->left = node->right = NULL;
+    return node;
+}
+
+int max(int a, int b) {
+    return (a > b)? a : b;
+}
+
+int height(Node* node) {
+    if (node == NULL)
+        return 0;
+    return node->height;
+}
+
+int bFactor(Node* node) {
+    if(node == NULL)
+        return 0;
+    return height(node->left) - height(node->right);
+}
 
 int* getRandomArray(int n) {
     int* arr = new int[n];
     int temp;
     srand(time(0));
-    for (int i = 0; i < n; i++) { //workon
+    for (int i = 0; i < n; i++) { 
         arr[i] = rand()%100;
     }
     return arr;
 }
 
-int height(Node* root) {
-    if (root == NULL) {
-        return 0;
-    }
-    return root->height;
-}
-
-int bFactor(Node* root) {
-    if (root == NULL) 
-        return 0;
-    else
-        return height(root->left) - height(root->right);
-}
-
-int max(int a, int b) {
-    if (a > b) 
-        return a;
-    else
-        return b;
-}
-
-Node* rightRotate(Node* root) {
-    Node* t1 = root->left;
-    Node* t2 = t1->right;
-
-    t1->right = root;
-    root->left = t2;
-
-    root->height = max(height(root->left), height(root->right)) + 1;
-    t1->height = max(height(t1->left), height(t1->right)) + 1;
-
-    return t1;
-}
-
-Node* leftRotate(Node* root) {
-    Node* t1 = root->right;
-    Node* t2 = t1->left;
-
-    t1->left = root;
-    root->right = t2;
-
-    root->height = max(height(root->left), height(root->right)) + 1;
-    t1->height = max(height(t1->left), height(t1->right)) + 1;
-
-    return t1;
-
-}
-
-Node* insertRec(Node* root, int val) { 
-    if (!root) 
-        return newNode(val); 
-    if (val < root->data) 
-        root->left = insertRec(root->left, val); 
-    else
-        root->right = insertRec(root->right, val); 
-    return root; 
-} 
-
 Node* insertIter(Node* root, int val) {
     Node* newnode = newNode(val);
-    Node* node = root;
+    Node* current = root;
     Node* next = NULL;
-    while (node != NULL) { 
-        next = node; 
-        if (val < node->data) 
-            node = node->left; 
+    while (current != NULL) { 
+        next = current; 
+        if (val < current->data) 
+            current = current->left; 
         else
-            node = node->right; 
+            current = current->right; 
     }
     if (next == NULL) 
         next = newnode;
@@ -102,34 +60,56 @@ Node* insertIter(Node* root, int val) {
     else
         next->right = newnode; 
     return next; 
+}
 
-    int balance = 0;
-    Node* temp = NULL;
-    while (root != NULL) {
-        root->height = max(height(root->left), height(root->right)) + 1;
-        balance = bFactor(root);
-        if (balance > 1 && root->left->data > val) {
-            root = rightRotate(root);
-            balance = bFactor(root);
-        }
-        if (balance < -1 && root->right->data < val) {
-            root = leftRotate(root);
-            balance = bFactor(root);
-        }
-        if (balance > 1 && root->left->data < val) {
-            root->left = leftRotate(root->left);
-            root = rightRotate(root);
-            balance = bFactor(root);
-        }
-        if (balance < -1 && root->right->data > val) {
+Node* leftRotate(Node* node) {
+   Node* right = node->right;
+   Node* rightleft = right->left;
+   
+   right->left = node;
+   node->right = rightleft;
+   node->height = max(height(node->left), height(node->right))+1;
+   right->height = max(height(right->left), height(right->right))+1;
+   
+   return right;
+}
+
+Node* rightRotate(Node* node) {
+    Node* left = node->left;
+    Node* leftright = left->right;
+
+    left->right = node;
+    node->left = leftright;
+    node->height = max(height(node->left), height(node->right))+1;
+    left->height = max(height(left->left), height(left->right))+1;
+
+    return left;
+}
+
+Node* rebalance(Node* root) {
+    root->height = max( height(root->left), height(root->right)) + 1;
+    int balance = bFactor(root);
+    if (balance < -1) {
+        int childbalance = bFactor(root->right);
+        if (childbalance > 0) {
             root->right = rightRotate(root->right);
-            root = leftRotate(root);
-            balance = bFactor(root);
+            return leftRotate(root);
         }
-        temp = root;
-        root = root->parent;
+        else {
+            return leftRotate(root);
+        }
     }
-    return temp;
+    if (balance > 1) {
+        int childbalance = bFactor(root->left);
+        if (childbalance < 0) {
+            root->left = leftRotate(root->left);
+            return rightRotate(root);
+        }
+        else {
+            return rightRotate(root);
+        }
+    }
+    return root;
 }
 
 Node* findMinIter(Node* root) {
@@ -197,92 +177,62 @@ Node* findPrevIter(Node* root, int key) {
 }
 
 Node* deleteIter(Node* root, int val) {
+    Node* current = root;
+    Node *target = NULL;
     Node* parent = NULL;
-    while (root != NULL) {
-        if (root->data > val) {
-            parent = root;
-            root = root->left;
-            continue;
+
+    if(current == NULL) 
+        return NULL;
+    while(1) {  
+        if(current->data == val)
+            target = current;
+        if(val < current->data) {
+            if(current->left == NULL)
+                break;
+            parent = current;
+            current = current->left;
         }
-        if (root->data < val) {
-            parent = root;
-            root = root->right;
-            continue;
+        else {  
+            if(current->right == NULL)
+                break;
+            parent = current;
+            current = current->right;
         }
-        break;
     }
-    if (root->left == NULL || root->right == NULL) {
-        Node* temp = root->left ? root->left : root->right;
-        if (temp == NULL) {
-            temp = root;
-            root->parent->left = NULL;
-            root = NULL;
-        }
-        else 
-            *root = *temp;
-        free(temp);
+    if(target == NULL) {
+        return NULL;
     }
     else {
-        Node* temp = findMinIter(root->right);
-        root->data = temp->data;
-        root = root->right;
-        val = temp->data;
+        if(parent == NULL) {
+            free(current);
+            root = NULL;
+        }
+        else {
+            target->data = current->data;
+            if(parent->left == current) {
+                parent->left = current->right;
+            }
+            else {
+                parent->right = current->left;
+                free(current);
+            }
+        }
     }
-    if (root == NULL) {
-        return root;
-    }
-    root->height = max(height(root->left), height(root->right)) + 1;
-    int balance = 0;
-    Node* temp2 = NULL;
-    while (root != NULL) {
-        root->height = max(height(root->left), height(root->right)) + 1;
-        balance = bFactor(root);
-        if (balance > 1 && root->left->data > val) {
-            root = rightRotate(root);
-            balance = bFactor(root);
-        }
-        if (balance < -1 && root->right->data < val) {
-            root = leftRotate(root);
-            balance = bFactor(root);
-        }
-        if (balance > 1 && root->left->data < val) {
-            root->left = leftRotate(root->left);
-            root = rightRotate(root);
-            balance = bFactor(root);
-        }
-        if (balance < -1 && root->right->data > val) {
-            root->right = rightRotate(root->right);
-            root = leftRotate(root);
-            balance = bFactor(root);
-        }
-        temp2 = root;
-        root = root->parent;
-    }
-    return temp2;
+    return root;
 }
 
-void printAVL(Node* root) {  
-    if(root != NULL)  
-    {  
-        cout << root->data << " ";  
-        printAVL(root->left);  
-        printAVL(root->right);  
+void printInorder(Node* root) {  
+    if(root != NULL) {  
+        printInorder(root->left);  
+        cout << root->data << " "; 
+        printInorder(root->right);  
     }  
 }  
-
-void printBST(Node* root) {
-     if(root == NULL)
-           return;
-     printBST(root->left);
-     printf("%d ", root->data);
-     printBST(root->right);
-
-} 
 
 void printData(Node* root) {
     cout << root->data << endl;
 }
-/*
+
 bool AVL(Node* root) {
     if (root == NULL) {
         return 1;
@@ -300,47 +250,40 @@ void isAVL(Node* root) {
     else
         cout<<"TRY AGAIN"<<endl;
 }
-*/
-int main() { 
-    Node* avl = NULL; 
-    Node* bst = NULL;
+
+int main() 
+{ 
+
+    Node* root = NULL; 
     Node* min, *max, *next, *prev;
-    int n = 10000;
-    int* arr;
-    arr = getRandomArray(n);
-    cout<< endl;
-    
-    avl = insertIter(avl, arr[0]);
-    for (int i = 1; i < n; i++){
-        insertIter(avl, arr[i]);
-    }
-    bst = insertRec(bst, arr[0]);
-    for (int i = 1; i < n; i++){
-        insertRec(bst, arr[i]);
-    }
-    
-    printAVL(avl);
+
+    root = insertIter(root, 7); 
+    insertIter(root, 10); 
+    insertIter(root, 5); 
+    insertIter(root, 3); 
+    insertIter(root, 6); 
+    insertIter(root, 8); 
+    insertIter(root, 12); 
+    root = rebalance(root);
+    printInorder(root);
     cout << endl;
-    printBST(bst);
-    cout << endl;
-    
-    deleteIter(avl, arr[3]);
-    cout <<arr[3]<<" is deleted."<<endl;
-    printBST(avl);
+    deleteIter(root, 3);
+    root = rebalance(root);
+    cout <<"3 is deleted"<<endl;
+    printInorder(root);
     cout<<endl;
-    
-    max = findMaxIter(avl);
-    min = findMinIter(avl);
+    max = findMaxIter(root);
+    min = findMinIter(root);
     cout <<"The max value is: ";
     printData(max);
     cout <<"The min value is: ";
     printData(min);
-    next = findNextIter(avl, arr[2]); 
-    prev = findPrevIter(avl, arr[5]); 
-    cout <<"The next largest value of "<< arr[2]<<" is: ";
+    next = findNextIter(root, 5); //should output 6
+    prev = findPrevIter(root, 12); //should output 10
+    cout <<"The next largest value of 5 is: ";
     printData(next);
-    cout <<"The previous smallest value of "<<arr[5]<<" is: ";
+    cout <<"The previous smallest value of 12 is: ";
     printData(prev);
-    //isAVL(avl);
+    isAVL(root);
     return 0; 
 } 
