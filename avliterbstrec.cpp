@@ -19,7 +19,7 @@ Node* newNode(int key) {
 int max(int a, int b) {
     return (a > b)? a : b;
 }
- 
+
 int height(Node* node) {
     if (node == NULL)
         return 0;
@@ -37,30 +37,12 @@ int* getRandomArray(int n) {
     int temp;
     srand(time(0));
     for (int i = 0; i < n; i++) { //workon
-        arr[i] = rand()%100;
+        arr[i] = rand();
     }
     return arr;
 }
 
-Node* insertIter(Node* root, int val) {
-    Node* newnode = newNode(val);
-    Node* current = root;
-    Node* next = NULL;
-    while (current != NULL) { 
-        next = current; 
-        if (val < current->data) 
-            current = current->left; 
-        else
-            current = current->right; 
-    }
-    if (next == NULL) 
-        next = newnode;
-    else if (val < next->data) 
-        next->left = newnode; 
-    else
-        next->right = newnode; 
-    return next; 
-}
+
 
 Node* insertRec(Node* root, int val) { 
     if (!root) 
@@ -120,6 +102,27 @@ Node* rebalance(Node* root) {
         }
     }
     return root;
+}
+
+Node* insertIter(Node* root, int val) {
+    Node* newnode = newNode(val);
+    Node* current = root;
+    Node* next = NULL;
+    while (current != NULL) { 
+        next = current; 
+        if (val < current->data) 
+            current = current->left; 
+        else
+            current = current->right; 
+    }
+    if (next == NULL) 
+        next = newnode;
+    else if (val < next->data) 
+        next->left = newnode; 
+    else
+        next->right = newnode; 
+    next = rebalance(next);
+    return next; 
 }
 
 Node* findMinIter(Node* root) {
@@ -230,12 +233,11 @@ Node* deleteIter(Node* root, int val) {
     return root;
 }
 
-void printAVL(Node* root) {  
-    if(root != NULL)  
-    {  
-        cout << root->data << " ";  
-        printAVL(root->left);  
-        printAVL(root->right);  
+void printInorder(Node* root) {  
+    if(root != NULL) {  
+        printInorder(root->left);  
+        cout << root->data << " "; 
+        printInorder(root->right);  
     }  
 }  
 
@@ -280,15 +282,14 @@ int main() {
         insertRec(bst, arr[i]);
     }
     
-    printAVL(avl);
+    printInorder(avl);
     cout << endl;
-    printAVL(bst);
+    printInorder(bst);
     cout << endl;
-    
+    isAVL(avl);
     deleteIter(avl, arr[3]);
-    avl = rebalance(avl);
     cout <<arr[3]<<" is deleted."<<endl;
-    printAVL(avl);
+    
     cout<<endl;
     
     max = findMaxIter(avl);
@@ -303,6 +304,6 @@ int main() {
     printData(next);
     cout <<"The previous smallest value of "<<arr[5]<<" is: ";
     printData(prev);
-    isAVL(avl);
+    
     return 0; 
 } 
