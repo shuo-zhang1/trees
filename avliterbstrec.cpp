@@ -36,7 +36,7 @@ int* getRandomArray(int n) {
     int* arr = new int[n];
     int temp;
     srand(time(0));
-    for (int i = 0; i < n; i++) { 
+    for (int i = 0; i < n; i++) { //workon
         arr[i] = rand()%100;
     }
     return arr;
@@ -61,6 +61,16 @@ Node* insertIter(Node* root, int val) {
         next->right = newnode; 
     return next; 
 }
+
+Node* insertRec(Node* root, int val) { 
+    if (!root) 
+        return newNode(val); 
+    if (val < root->data) 
+        root->left = insertRec(root->left, val); 
+    else
+        root->right = insertRec(root->right, val); 
+    return root; 
+} 
 
 Node* leftRotate(Node* node) {
    Node* right = node->right;
@@ -177,10 +187,9 @@ Node* findPrevIter(Node* root, int key) {
 }
 
 Node* deleteIter(Node* root, int val) {
-    Node* current = root;
-    Node *target = NULL;
-    Node* parent = NULL;
-
+    Node* current, *target, *parent;
+    current = root;
+    target = NULL;
     if(current == NULL) 
         return NULL;
     while(1) {  
@@ -221,11 +230,12 @@ Node* deleteIter(Node* root, int val) {
     return root;
 }
 
-void printInorder(Node* root) {  
-    if(root != NULL) {  
-        printInorder(root->left);  
-        cout << root->data << " "; 
-        printInorder(root->right);  
+void printAVL(Node* root) {  
+    if(root != NULL)  
+    {  
+        cout << root->data << " ";  
+        printAVL(root->left);  
+        printAVL(root->right);  
     }  
 }  
 
@@ -251,39 +261,48 @@ void isAVL(Node* root) {
         cout<<"TRY AGAIN"<<endl;
 }
 
-int main() 
-{ 
-
-    Node* root = NULL; 
+int main() { 
+    Node* avl = NULL; 
+    Node* bst = NULL;
     Node* min, *max, *next, *prev;
-
-    root = insertIter(root, 7); 
-    insertIter(root, 10); 
-    insertIter(root, 5); 
-    insertIter(root, 3); 
-    insertIter(root, 6); 
-    insertIter(root, 8); 
-    insertIter(root, 12); 
-    root = rebalance(root);
-    printInorder(root);
+    int n = 10000;
+    int* arr;
+    arr = getRandomArray(n);
+    cout<< endl;
+    
+    avl = insertIter(avl, arr[0]);
+    for (int i = 1; i < n; i++){
+        insertIter(avl, arr[i]);
+    }
+    avl = rebalance(avl);
+    bst = insertRec(bst, arr[0]);
+    for (int i = 1; i < n; i++){
+        insertRec(bst, arr[i]);
+    }
+    
+    printAVL(avl);
     cout << endl;
-    deleteIter(root, 3);
-    root = rebalance(root);
-    cout <<"3 is deleted"<<endl;
-    printInorder(root);
+    printAVL(bst);
+    cout << endl;
+    
+    deleteIter(avl, arr[3]);
+    avl = rebalance(avl);
+    cout <<arr[3]<<" is deleted."<<endl;
+    printAVL(avl);
     cout<<endl;
-    max = findMaxIter(root);
-    min = findMinIter(root);
+    
+    max = findMaxIter(avl);
+    min = findMinIter(avl);
     cout <<"The max value is: ";
     printData(max);
     cout <<"The min value is: ";
     printData(min);
-    next = findNextIter(root, 5); //should output 6
-    prev = findPrevIter(root, 12); //should output 10
-    cout <<"The next largest value of 5 is: ";
+    next = findNextIter(avl, arr[2]); 
+    prev = findPrevIter(avl, arr[5]); 
+    cout <<"The next largest value of "<< arr[2]<<" is: ";
     printData(next);
-    cout <<"The previous smallest value of 12 is: ";
+    cout <<"The previous smallest value of "<<arr[5]<<" is: ";
     printData(prev);
-    isAVL(root);
+    isAVL(avl);
     return 0; 
 } 
