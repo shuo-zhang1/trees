@@ -1,33 +1,36 @@
 #include <stdio.h>
 #include <iostream>
-#include <time.h>
+#include <algorithm>
+#include <vector>
 using namespace std;
 
-int* getRandomArray(int n) {
-    int* arr = new int[n];
-    srand(time(0));
-    for (int i = 0; i < n; i++) {
-        arr[i] = rand();
+vector<int> getSortedArray(int n)
+{
+    vector<int> list;
+    for (int i = n; i > 0; i--)
+    {
+        list.push_back(i);
     }
-    return arr;
+    return list;
 }
 
-int* getSortedArray(int n) {
-    int* arr = new int[n];
-    for (int i = 0; i < n; i++) {
-        arr[i] = n - i;
-    }
-    return arr;
+vector<int> getRandomArray(int n)
+{
+    vector<int> list;
+    list = getSortedArray(n);
+    random_shuffle(list.begin(), list.end());
+    return list;
 }
 
-void printArray(int* arr, int n) {
+void printArray(vector<int> arr, int n) {
     for (int i = 0; i < n; i++){
         cout << arr[i] << " ";
     }
 }
 
 int main() {
-    int* r, *s;
+    vector<int> r;
+    vector<int> s;
     int size = 6;
     r = getRandomArray(6);
     s = getSortedArray(6);
